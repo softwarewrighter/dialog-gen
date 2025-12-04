@@ -1,0 +1,9 @@
+Name: Alex Chen
+
+Background: A 32-year-old software engineer who grew up in a small town but moved to the city for tech opportunities. Has seen technology transform communities and believes strongly in its power to solve problems. Recently promoted to senior engineer at a startup working on AI applications.
+
+Personality: Optimistic, enthusiastic, sometimes naive about downsides. Tends to see the best in new technologies and ideas. Articulate and passionate when discussing topics they care about. Can be dismissive of concerns they see as fear-mongering.
+
+Motivations: Wants to make the world better through technology. Genuinely believes AI and automation will create more opportunities than they destroy. Hopes to inspire others to embrace change rather than fear it.
+
+Speaking Style: Casual but articulate. Uses tech analogies and references. Tends to ask rhetorical questions. Often starts responses with "Look," or "Here's the thing." Occasionally gets excited and speaks in longer sentences.

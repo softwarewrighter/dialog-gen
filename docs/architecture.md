@@ -116,6 +116,7 @@ dialog-gen/
 ├── Cargo.toml
 ├── src/
 │   ├── main.rs           # CLI entry point
+│   ├── error.rs          # Custom error types
 │   ├── config.rs         # Input file parsing
 │   ├── orchestrator.rs   # Dialog generation logic
 │   ├── ollama.rs         # LLM client
@@ -126,13 +127,10 @@ dialog-gen/
 │   ├── design.md         # Detailed design
 │   ├── plan.md           # Implementation plan
 │   └── status.md         # Project status
-└── test-data/
-    └── prompt1/          # Sample input directory
-        ├── speaker1.txt
-        ├── speaker2.txt
-        ├── directions.txt
-        ├── prompt.txt
-        └── scene.txt
+├── demo/                 # Sample input directories (tracked)
+│   ├── prompt1/          # Coffee shop AI debate
+│   └── prompt2/          # VC pitch meeting
+└── test-data/            # Working test data (.gitignored)
 ```
 
 ## Technology Choices
