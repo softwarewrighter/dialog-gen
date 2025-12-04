@@ -1,6 +1,7 @@
 use crate::config::{DialogConfig, Speaker};
 use crate::error::Result;
 use crate::ollama::{ChatMessage, OllamaClient};
+use std::time::Duration;
 
 pub struct DialogOrchestrator {
     ollama: OllamaClient,
@@ -13,9 +14,22 @@ pub struct DialogExchange {
     pub content: String,
 }
 
+/// Metadata about the generation run
+#[derive(Debug)]
+pub struct GenerationMetadata {
+    pub model: String,
+    pub turns: usize,
+    pub temperature: f32,
+    pub total_prompt_tokens: u64,
+    pub total_completion_tokens: u64,
+    pub total_wall_time: Duration,
+    pub avg_tokens_per_second: f64,
+}
+
 #[derive(Debug)]
 pub struct GeneratedDialog {
     pub exchanges: Vec<DialogExchange>,
+    pub metadata: GenerationMetadata,
 }
 
 impl DialogOrchestrator {
@@ -26,36 +40,21 @@ impl DialogOrchestrator {
     /// Build system prompt for a speaker
     fn build_system_prompt(&self, speaker: &Speaker, other_speaker: &Speaker) -> String {
         format!(
-            r#"You are roleplaying as {name} in a two-person conversation with {other_name}.
+            r#"You are {name} talking to {other_name}.
 
-YOUR CHARACTER ({name}):
-- Background: {background}
-- Personality: {personality}
-- Motivations: {motivations}
-- Speaking style: {speaking_style}
+{name}: {background} {personality} {speaking_style}
 
-SCENE CONTEXT:
-{scene} - {setting}
-Mood: {mood}
-Goal: {goal}
+Scene: {scene}. {setting}
 {notes}
 
-CRITICAL RULES:
-1. Output ONLY {name}'s next spoken line - nothing else
-2. Maximum 1-3 sentences
-3. No name prefix, no quotes, no stage directions, no narration
-4. Stay in character as {name}
-5. Respond naturally to what {other_name} just said"#,
+RESPOND WITH EXACTLY ONE SHORT SENTENCE. Either a statement OR a question, never both. No followup. Just react to what {other_name} said."#,
             name = speaker.name,
             other_name = other_speaker.name,
             background = speaker.background,
             personality = speaker.personality,
-            motivations = speaker.motivations,
             speaking_style = speaker.speaking_style,
             scene = self.config.directions.scene_name,
             setting = self.config.directions.setting,
-            mood = self.config.directions.mood,
-            goal = self.config.directions.goal,
             notes = self.config.directions.notes,
         )
     }
@@ -129,6 +128,12 @@ CRITICAL RULES:
 
         let mut current_speaker = self.get_next_speaker(last_speaker);
 
+        // Track aggregate stats
+        let mut total_prompt_tokens: u64 = 0;
+        let mut total_completion_tokens: u64 = 0;
+        let mut total_wall_time = Duration::ZERO;
+        let mut total_eval_ns: u64 = 0;
+
         for turn in 0..self.config.scene.turns {
             if verbose {
                 eprint!(
@@ -143,13 +148,19 @@ CRITICAL RULES:
             let system_prompt = self.build_system_prompt(current_speaker, other_speaker);
             let messages = self.build_conversation_history(current_speaker, &exchanges);
 
-            let response = self
+            let result = self
                 .ollama
                 .chat(&system_prompt, &messages, self.config.scene.temperature)
                 .await?;
 
-            // Clean up response (remove any accidental name prefix, truncate if too long)
-            let cleaned_response = self.clean_response(&response, &current_speaker.name);
+            // Accumulate stats
+            total_prompt_tokens += result.stats.prompt_tokens;
+            total_completion_tokens += result.stats.completion_tokens;
+            total_wall_time += result.stats.wall_time;
+            total_eval_ns += result.stats.eval_duration_ns;
+
+            // Clean up response (remove any accidental name prefix)
+            let cleaned_response = self.clean_response(&result.content, &current_speaker.name);
 
             if verbose {
                 eprintln!("{}", cleaned_response);
@@ -168,7 +179,26 @@ CRITICAL RULES:
             };
         }
 
-        Ok(GeneratedDialog { exchanges })
+        let avg_tokens_per_second = if total_eval_ns > 0 {
+            (total_completion_tokens as f64) / (total_eval_ns as f64 / 1_000_000_000.0)
+        } else {
+            0.0
+        };
+
+        let metadata = GenerationMetadata {
+            model: self.ollama.model().to_string(),
+            turns: self.config.scene.turns,
+            temperature: self.config.scene.temperature,
+            total_prompt_tokens,
+            total_completion_tokens,
+            total_wall_time,
+            avg_tokens_per_second,
+        };
+
+        Ok(GeneratedDialog {
+            exchanges,
+            metadata,
+        })
     }
 
     /// Clean up LLM response - remove name prefix, truncate if needed

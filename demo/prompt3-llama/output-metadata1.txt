@@ -1,0 +1,10 @@
+Model: llama3.2:latest
+Turns: 12
+Temperature: 0.90
+
+Prompt tokens: 5544
+Completion tokens: 301
+Total tokens: 5845
+
+Wall time: 25.30s
+Tokens/second: 54.3

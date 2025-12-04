@@ -1,0 +1,10 @@
+Model: mistral:7b
+Turns: 12
+Temperature: 0.90
+
+Prompt tokens: 4971
+Completion tokens: 159
+Total tokens: 5130
+
+Wall time: 25.99s
+Tokens/second: 29.4

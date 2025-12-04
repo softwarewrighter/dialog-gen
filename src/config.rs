@@ -5,6 +5,7 @@ use std::path::Path;
 
 /// Speaker character definition
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct Speaker {
     pub name: String,
     pub background: String,
@@ -23,6 +24,7 @@ pub struct Scene {
 
 /// Director's notes
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct Directions {
     pub scene_name: String,
     pub setting: String,
