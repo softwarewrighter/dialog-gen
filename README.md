@@ -21,6 +21,7 @@ Options:
   -i, --input <INPUT>    Input directory with config files
   -o, --output <OUTPUT>  Output directory (default: input dir)
   -m, --model <MODEL>    Ollama model [default: mistral:7b]
+  -e, --edit-podcast     Apply podcast editor to improve dialog quality
   -v, --verbose          Show generation progress
 ```
 
@@ -40,6 +41,8 @@ Each input directory needs:
 
 - `generated-dialogN.txt` - The conversation
 - `output-metadataN.txt` - Model, token counts, timing stats
+- `edited-podcast.txt` - Edited dialog (when using `--edit-podcast`)
+- `edited-metadata.txt` - Editor run stats (when using `--edit-podcast`)
 
 ---
 
@@ -82,12 +85,23 @@ The `demo/` directory contains the evolution of prompt engineering and model sel
 - **Output**: [generated-dialog1.txt](demo/prompt3-llama/generated-dialog1.txt)
 - **Stats**: [output-metadata1.txt](demo/prompt3-llama/output-metadata1.txt) (54.3 tokens/sec)
 
+### Iteration 5: Podcast Editor
+
+**[demo/prompt3-llama/](demo/prompt3-llama/)** - Post-generation editing pass
+
+- **Change**: Added `--edit-podcast` flag for LLM-powered editing
+- **How it works**: Sends generated dialog to LLM with podcast editor system prompt
+- **Result**: Tighter dialog (12 turns → 7), smoother flow, better pacing
+- **Edited Output**: [edited-podcast.txt](demo/prompt3-llama/edited-podcast.txt)
+- **Stats**: [edited-metadata.txt](demo/prompt3-llama/edited-metadata.txt) (54.9 tokens/sec)
+
 ### Key Learnings
 
 1. **Simpler prompts work better** - Verbose instructions get ignored
 2. **Model choice matters** - llama3.2 follows instructions better than mistral:7b
 3. **Character voice comes from examples** - Speaking style descriptions help
 4. **Director's notes set tone** - "CRITICAL" and "IMPORTANT" prefixes help
+5. **Post-editing improves quality** - LLM editor pass tightens dialog and smooths pacing
 
 ### Recommended Setup
 
@@ -96,6 +110,7 @@ For natural podcast-style dialog:
 - Temperature: `0.9`
 - Turns: `10-15`
 - System prompt: Keep it short, emphasize single-sentence responses
+- Use `--edit-podcast` for a polished final result
 
 ---
 

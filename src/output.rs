@@ -77,4 +77,46 @@ impl OutputWriter {
 
         Ok(dialog_path)
     }
+
+    /// Write edited podcast dialog to file
+    pub fn write_edited(&self, dialog: &GeneratedDialog) -> Result<PathBuf> {
+        // Ensure output directory exists
+        fs::create_dir_all(&self.output_dir)?;
+
+        let edited_path = self.output_dir.join("edited-podcast.txt");
+        let metadata_path = self.output_dir.join("edited-metadata.txt");
+
+        // Write edited dialog
+        let mut content = String::new();
+        for exchange in &dialog.exchanges {
+            content.push_str(&format!("{}: {}\n\n", exchange.speaker, exchange.content));
+        }
+        fs::write(&edited_path, content.trim_end())?;
+
+        // Write metadata
+        let meta = &dialog.metadata;
+        let metadata_content = format!(
+            "Model: {}\n\
+             Turns: {}\n\
+             Temperature: {:.2}\n\
+             \n\
+             Prompt tokens: {}\n\
+             Completion tokens: {}\n\
+             Total tokens: {}\n\
+             \n\
+             Wall time: {:.2}s\n\
+             Tokens/second: {:.1}\n",
+            meta.model,
+            meta.turns,
+            meta.temperature,
+            meta.total_prompt_tokens,
+            meta.total_completion_tokens,
+            meta.total_prompt_tokens + meta.total_completion_tokens,
+            meta.total_wall_time.as_secs_f64(),
+            meta.avg_tokens_per_second,
+        );
+        fs::write(&metadata_path, metadata_content)?;
+
+        Ok(edited_path)
+    }
 }

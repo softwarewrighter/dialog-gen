@@ -1,4 +1,5 @@
 mod config;
+mod editor;
 mod error;
 mod ollama;
 mod orchestrator;
@@ -9,6 +10,7 @@ use clap::Parser;
 use std::path::PathBuf;
 
 use config::DialogConfig;
+use editor::PodcastEditor;
 use ollama::OllamaClient;
 use orchestrator::DialogOrchestrator;
 use output::OutputWriter;
@@ -37,6 +39,10 @@ struct Cli {
     /// Verbose output
     #[arg(short, long)]
     verbose: bool,
+
+    /// Apply podcast editor to improve dialog quality
+    #[arg(short = 'e', long)]
+    edit_podcast: bool,
 }
 
 #[tokio::main]
@@ -100,7 +106,7 @@ async fn main() -> Result<()> {
     }
 
     // Create orchestrator and generate dialog
-    let orchestrator = DialogOrchestrator::new(ollama, config);
+    let orchestrator = DialogOrchestrator::new(ollama.clone(), config);
     let dialog = orchestrator.generate(cli.verbose).await?;
 
     // Write output
@@ -113,6 +119,20 @@ async fn main() -> Result<()> {
 
     for exchange in &dialog.exchanges {
         println!("{}: {}\n", exchange.speaker, exchange.content);
+    }
+
+    // Optional podcast editing step
+    if cli.edit_podcast {
+        let editor = PodcastEditor::new(ollama);
+        let edited = editor.edit(&dialog, cli.verbose).await?;
+
+        let edited_path = writer.write_edited(&edited)?;
+
+        println!("\n--- Edited Podcast ---\n");
+        for exchange in &edited.exchanges {
+            println!("{}: {}\n", exchange.speaker, exchange.content);
+        }
+        println!("Edited podcast: {}", edited_path.display());
     }
 
     Ok(())

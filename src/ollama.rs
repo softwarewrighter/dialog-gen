@@ -2,6 +2,7 @@ use crate::error::{DialogGenError, Result};
 use serde::{Deserialize, Serialize};
 use std::time::{Duration, Instant};
 
+#[derive(Clone)]
 pub struct OllamaClient {
     client: reqwest::Client,
     base_url: String,

@@ -1,8 +1,8 @@
 # Dialog-Gen Project Status
 
-## Current Status: **v0.2.0 - Improved Dialog Quality**
+## Current Status: **v0.3.0 - Podcast Editor**
 
-Last Updated: 2024-12-04
+Last Updated: 2025-12-04
 
 ## Completed
 
@@ -22,6 +22,10 @@ Last Updated: 2024-12-04
   - [x] prompt3-llama - Podcast chat with llama3.2 (best results)
 - [x] Output metadata (model, tokens, timing stats)
 - [x] Code quality (fmt, clippy clean)
+- [x] Podcast editor (--edit-podcast flag)
+  - [x] src/editor.rs - LLM-powered dialog editing
+  - [x] Edited output files (edited-podcast.txt, edited-metadata.txt)
+  - [x] Demo with edited dialog (prompt3-llama)
 
 ## Not Started
 
@@ -44,6 +48,7 @@ Options:
   -o, --output <OUTPUT>          Output directory (defaults to input directory)
   -m, --model <MODEL>            Ollama model to use [default: mistral:7b]
       --ollama-url <OLLAMA_URL>  Ollama server URL [default: http://localhost:11434]
+  -e, --edit-podcast             Apply podcast editor to improve dialog quality
   -v, --verbose                  Verbose output
   -h, --help                     Print help
   -V, --version                  Print version
@@ -61,3 +66,7 @@ Options:
 Each run produces:
 - `generated-dialogN.txt` - The conversation
 - `output-metadataN.txt` - Model, tokens, timing stats
+
+With `--edit-podcast`:
+- `edited-podcast.txt` - Edited dialog
+- `edited-metadata.txt` - Editor run stats
